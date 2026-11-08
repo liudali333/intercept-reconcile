@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+function context(path){const c={localStorage:{getItem:()=>null},location:{pathname:'/frontend/',origin:'http://example.com',href:'http://example.com/backend/web/'},document:{addEventListener(){}},setInterval(){},URL,URLSearchParams};vm.createContext(c);vm.runInContext(fs.readFileSync(path,'utf8').replace(/^render\(\);$/m,''),c);return c;}
+for(const p of ['frontend/app.js','backend/web/assets/app.js']){const c=context(p);const html=vm.runInContext('loginHtml()',c);assert.match(html,/type="password"/);assert.doesNotMatch(html,/请输入账号|id="lu"/);}
+const c=context('backend/web/assets/app.js');const el={innerHTML:''};c.document.getElementById=()=>el;
+vm.runInContext("req=async()=>({code:0,data:[{courier_id:1,courier_name:'顺丰',courier_code:'SF',status:1,password_set:0},{courier_id:2,courier_name:'中通',courier_code:'ZTO',status:1,password_set:1}]})",c);
+(async()=>{await vm.runInContext('loadAccounts()',c);assert.match(el.innerHTML,/顺丰/);assert.match(el.innerHTML,/中通/);assert.match(el.innerHTML,/未设置/);assert.match(el.innerHTML,/已设置/);assert.doesNotMatch(el.innerHTML,/新增账号/);console.log('PASS: 两端仅密码登录、全部公司直接列表、密码设置状态');})().catch(e=>{console.error(e);process.exitCode=1});

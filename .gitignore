@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+*.zip
+*.log
+node_modules/
+vendor/
+backend/config/*.local.php
+backend/private/
+uploads/
+deploy/
+*-release/
+*.png
+*.jpg
+*.jpeg
